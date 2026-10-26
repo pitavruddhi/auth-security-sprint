@@ -52,4 +52,18 @@ Route::middleware(['auth:sanctum', 'role:admin'])
     Route::put('/profile',[ProfileController::class,'update']);
  });
 
+ Route::post('/logout', [AuthController::class, 'logout'])
+    ->middleware('auth:sanctum');
+
+
+Route::post('/forgot-password', [
+    AuthController::class,
+    'forgotPassword',
+]);
+
+Route::post('/reset-password', [
+    AuthController::class,
+    'resetPassword',
+]);
+
 

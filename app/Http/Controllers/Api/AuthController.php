@@ -8,6 +8,9 @@ use App\Http\Requests\Auth\LoginRequest;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -117,5 +120,80 @@ class AuthController extends Controller
             'token_type' => 'Bearer',
         ]);
     }
+
+    
+    public function logout(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $request->user()->currentAccessToken()->delete();
+
+        return response()->json([
+            'message' => 'Logged out successfully.',
+        ]);
+    }
+
+    
+    public function forgotPassword(Request $request)
+    {
+        $request->validate([
+            'email' => ['required', 'email'],
+        ]);
+
+        $status = Password::sendResetLink(
+            $request->only('email')
+        );
+
+        if ($status === Password::RESET_LINK_SENT) {
+            return response()->json([
+                'message' => 'If an account exists for this email, a password reset link will be sent.',
+            ], 200);
+        }
+
+        if ($status === Password::RESET_THROTTLED) {
+            return response()->json([
+                'message' => 'Please wait before requesting another reset link.',
+            ], 429);
+        }
+
+        // Avoid revealing whether the email address has an account.
+        return response()->json([
+            'message' => 'If an account exists for this email, a password reset link will be sent.',
+        ], 200);
+    }
+
+    
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'token' => ['required', 'string'],
+            'email' => ['required', 'email'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ]);
+
+        $status = Password::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function (User $user, string $password) {
+                $user->forceFill([
+                    'password' => $password,
+                    'remember_token' => Str::random(60),
+                ])->save();
+
+                // Revoke all existing Sanctum API tokens.
+                $user->tokens()->delete();
+            }
+        );
+
+        if ($status === Password::PASSWORD_RESET) {
+            return response()->json([
+                'message' => 'Password has been reset successfully. Please log in again.',
+            ], 200);
+        }
+
+        return response()->json([
+            'message' => 'Unable to reset password. The token may be invalid, expired, or already used.',
+        ], 422);
+    }
+
+
+
 
 }

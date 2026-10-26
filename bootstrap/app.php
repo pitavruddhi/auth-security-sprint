@@ -4,6 +4,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\UserHasRole;
+use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -14,8 +15,16 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
-            'role' => UserHasRole::class,
+            'role' =>  \App\Http\Middleware\UserHasRole::class,
         ]);
+
+        $middleware->redirectUsersTo(function (Request $request): string {
+        return $request->user()?->role === 'admin'
+            ? route('admin.dashboard')
+            : route('customer.dashboard');
+        });
+
+
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

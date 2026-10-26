@@ -19,17 +19,27 @@ class UserHasRole
 
     //   check user authentication
       if(!$user){
-        return response()->json([
-            'message' => 'Unauthenticated.',
-        ], 401);
+
+        if($request->is('api/*') || $request->expectsJson()){
+          return response()->json([
+              'message' => 'Unauthenticated.',
+          ], 401);
+        }
+        
+        return redirect()->route('login');
       }
 
     //   check role permissions
 
       if($user->role !== $role){
-        return response()->json([
-            'message' => 'Forbidden. You do not have permission to access this resource.',
-        ], 403);
+        
+        if($request->is('api/*') || $request->expectsJson()){
+          return response()->json([
+              'message' => 'Forbidden. You do not have permission to access this resource.',
+          ], 403);
+        }
+        
+        abort(403, 'You do not have permission to access this page.');
       }
 
     //   request continues.
