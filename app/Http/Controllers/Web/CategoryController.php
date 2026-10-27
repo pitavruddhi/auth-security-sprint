@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Web;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Http\Requests\StoreCategoryRequest;
 use App\Http\Requests\UpdateCategoryRequest;
@@ -54,7 +55,7 @@ class CategoryController extends Controller
         Category::create($validated);
 
         return redirect()
-            ->route('categories.index')
+            ->route('admin.categories.index')
             ->with('success', 'Category created successfully.');
     }
 
@@ -104,7 +105,7 @@ class CategoryController extends Controller
         $category->update($validated);
 
         return redirect()
-            ->route('categories.index')
+            ->route('admin.categories.index')
             ->with('success', 'Category updated successfully.');
     }
 
@@ -131,7 +132,7 @@ class CategoryController extends Controller
         $category->delete();
 
         return redirect()
-            ->route('categories.index')
+            ->route('admin.categories.index')
             ->with('success', 'Category deleted successfully.');
     }
 

@@ -2,9 +2,10 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\Web\CategoryController;
 use App\Http\Controllers\Web\AuthController;
 use App\Http\Controllers\Web\ProfileController;
+use App\Http\Controllers\Web\ProductController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -53,11 +54,34 @@ Route::middleware('auth')->group(function () {
 
 });
 
-Route::middleware(['auth','role:admin'])->group(function(){
-    Route::get('/admin/dashboard',function(){
-        return view('dashboard.admin');
-    })->name('admin.dashboard');
-});
+
+Route::middleware(['auth', 'role:admin'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+
+        // Admin Dashboard
+        Route::get('/dashboard', function () {
+            return view('dashboard.admin');
+        })->name('dashboard');
+
+         // Category management
+        Route::resource('categories', CategoryController::class)
+            ->except(['show']);
+
+        Route::get('products/trash', [ProductController::class, 'trash'])
+            ->name('products.trash');
+
+        Route::patch('products/{product}/restore', [ProductController::class, 'restore'])
+            ->name('products.restore');
+
+        Route::delete('products/{product}/force-delete', [ProductController::class, 'forceDelete'])
+            ->name('products.forceDelete');    
+
+        // Product Management: index, create, store, edit, update, destroy
+        Route::resource('products', ProductController::class)
+            ->except(['show']);
+    });
 
 Route::middleware(['auth', 'role:customer'])->group(function () {
     Route::get('/customer/dashboard', function () {
@@ -65,6 +89,11 @@ Route::middleware(['auth', 'role:customer'])->group(function () {
     })->name('customer.dashboard');
 });
 
-// Existing category CRUD routes — preserved.
-Route::resource('categories', CategoryController::class)
-    ->except(['show']);
+
+Route::get('/catalog', [ProductController::class, 'catalog'])
+    ->name('catalog.index');
+
+Route::get('/catalog/{product:slug}', [ProductController::class, 'publicShow'])
+    ->name('catalog.show');
+
+

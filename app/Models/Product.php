@@ -16,7 +16,7 @@ class Product extends Model
         'slug' ,
         'sku' ,
         'base_price',
-        'stock_price',
+        'stock_quantity',
         'description',
     ];
 
