@@ -6,6 +6,7 @@ use App\Http\Controllers\Web\CategoryController;
 use App\Http\Controllers\Web\AuthController;
 use App\Http\Controllers\Web\ProfileController;
 use App\Http\Controllers\Web\ProductController;
+use App\Http\Controllers\Web\CartController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -95,5 +96,25 @@ Route::get('/catalog', [ProductController::class, 'catalog'])
 
 Route::get('/catalog/{product:slug}', [ProductController::class, 'publicShow'])
     ->name('catalog.show');
+
+
+// Shopping cart: guests and authenticated users
+Route::get('/cart', [CartController::class, 'index'])
+    ->name('cart.index');
+
+Route::post('/cart/items', [CartController::class, 'addItem'])
+    ->name('cart.items.store');
+
+Route::patch('/cart/items/{item}', [CartController::class, 'updateItem'])
+    ->name('cart.items.update');
+
+Route::delete('/cart/items/{item}', [CartController::class, 'removeItem'])
+    ->name('cart.items.destroy');
+
+Route::delete('/cart', [CartController::class, 'clear'])
+    ->name('cart.clear');
+
+Route::get('/cart/summary', [CartController::class, 'summary'])
+    ->name('cart.summary');    
 
 

@@ -33,6 +33,10 @@ class AuthController extends Controller
             'role' => 'customer',
         ]);
 
+        $guestSessionId = $request->session()->getId();
+
+        app(\App\Services\CartService::class)->mergeGuestCart($guestSessionId, $user);
+
         Auth::login($user);
         $request->session()->regenerate();
 
@@ -52,6 +56,10 @@ class AuthController extends Controller
             'password' => ['required', 'string'],
         ]);
 
+        $guestSessionId = $request->session()->getId();
+
+
+
         if (! Auth::attempt($credentials)) {
             return back()
                 ->withErrors(['email' => 'Invalid email or password.'])
@@ -59,6 +67,8 @@ class AuthController extends Controller
         }
 
         $request->session()->regenerate();
+
+        app(\App\Services\CartService::class)->mergeGuestCart($guestSessionId, $request->user());
 
         return redirect()->intended(route($this->dashboardRoute())
         );
